@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" },
+    { "source": "/cartes", "destination": "/cartes.html" },
+    { "source": "/admin", "destination": "/admin.html" }
+  ]
+}
