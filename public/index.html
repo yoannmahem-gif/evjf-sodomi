@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EVJF — Pose ta question 💌</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rose: #f4a7b9;
+      --rose-deep: #e8768f;
+      --blush: #fdf0f4;
+      --text: #3a2a2f;
+      --text-light: #8a7070;
+      --white: #ffffff;
+      --shadow: 0 8px 32px rgba(232, 118, 143, 0.15);
+    }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: linear-gradient(135deg, #fdf0f4 0%, #fef7f0 50%, #f9f0fd 100%);
+      min-height: 100vh;
+      color: var(--text);
+      padding: 0 16px 60px;
+    }
+
+    header {
+      text-align: center;
+      padding: 48px 16px 32px;
+    }
+
+    .emoji-crown { font-size: 2.5rem; display: block; margin-bottom: 12px; }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    header h1 span { color: var(--rose-deep); font-style: italic; }
+
+    header p {
+      margin-top: 12px;
+      color: var(--text-light);
+      font-size: 1rem;
+      font-weight: 300;
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 480px;
+      margin: 0 auto 28px;
+      color: var(--rose);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--rose), transparent);
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 32px;
+      max-width: 480px;
+      margin: 0 auto 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      color: var(--text);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      border: 1.5px solid #f0e0e6;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-family: 'Lato', sans-serif;
+      font-size: 1rem;
+      color: var(--text);
+      background: var(--blush);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      resize: none;
+    }
+
+    textarea:focus {
+      border-color: var(--rose-deep);
+      box-shadow: 0 0 0 3px rgba(232, 118, 143, 0.12);
+      background: var(--white);
+    }
+
+    .char-count {
+      text-align: right;
+      font-size: 0.75rem;
+      color: var(--text-light);
+      margin-top: 4px;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      margin-top: 24px;
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--rose-deep), #c45c7a);
+      color: var(--white);
+      font-family: 'Lato', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 16px rgba(232, 118, 143, 0.4);
+    }
+
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(232, 118, 143, 0.45); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: linear-gradient(135deg, #3a2a2f, #5a3a4a);
+      color: white;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 100;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .questions-list { max-width: 480px; margin: 0 auto; }
+
+    #list-container { display: flex; flex-direction: column; gap: 10px; }
+
+    .q-item {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 2px 12px rgba(232, 118, 143, 0.08);
+      border-left: 4px solid var(--rose);
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .q-text {
+      font-size: 0.95rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--text-light);
+      font-size: 0.9rem;
+      padding: 24px;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--text-light);
+      font-size: 0.78rem;
+      margin-top: 32px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span class="emoji-crown">💌</span>
+    <h1>Pose une question à <span>la future mariée</span></h1>
+    <p>Ta question est anonyme et sera révélée le jour J sous forme de carte.</p>
+  </header>
+
+  <div class="card">
+    <h2>✍️ Ta question</h2>
+    <form id="form">
+      <div>
+        <label for="question">Ta question secrète</label>
+        <textarea id="question" placeholder="Exemple : Est-ce que tu aimes la bite ?" maxlength="280" required></textarea>
+        <div class="char-count"><span id="char-count">0</span>/280</div>
+      </div>
+      <button type="submit" class="btn" id="submit-btn">Envoyer ma question 💖</button>
+    </form>
+  </div>
+
+  <p class="footer-note">Les questions sont anonymes et seront découvertes le jour J 🤫</p>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const form = document.getElementById('form');
+    const questionInput = document.getElementById('question');
+    const charCount = document.getElementById('char-count');
+    const submitBtn = document.getElementById('submit-btn');
+    const listContainer = document.getElementById('list-container');
+    const toast = document.getElementById('toast');
+
+    let questions = [];
+
+    questionInput.addEventListener('input', () => {
+      charCount.textContent = questionInput.value.length;
+    });
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function renderList() {
+      const active = questions.filter(q => !q.trashed);
+      if (active.length === 0) {
+        listContainer.innerHTML = '<div class="empty-state">Aucune question pour l\'instant — sois la première ! 🌸</div>';
+        return;
+      }
+      listContainer.innerHTML = active.map(q => `
+        <div class="q-item">
+          <div class="q-text">${escapeHtml(q.question)}</div>
+        </div>
+      `).join('');
+    }
+
+    async function loadQuestions() {
+      try {
+        const res = await fetch('/api/questions');
+        questions = await res.json();
+        renderList();
+      } catch(e) {}
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const question = questionInput.value.trim();
+      if (!question) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Envoi en cours...';
+
+      try {
+        const res = await fetch('/api/questions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question })
+        });
+        if (!res.ok) throw new Error();
+        const newQ = await res.json();
+        questions.unshift(newQ);
+        renderList();
+        form.reset();
+        charCount.textContent = '0';
+        showToast('✨ Ta question a été ajoutée !');
+      } catch(e) {
+        showToast('❌ Erreur, réessaie.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Envoyer ma question 💖';
+      }
+    });
+
+    loadQuestions();
+    setInterval(loadQuestions, 15000);
+  </script>
+</body>
+</html>

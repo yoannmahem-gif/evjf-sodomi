@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EVJF — Cartes 👑</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rose: #f4a7b9;
+      --rose-deep: #e8768f;
+      --blush: #fdf0f4;
+      --gold: #c9a96e;
+      --gold-light: #f5e6cc;
+      --text: #3a2a2f;
+      --text-light: #8a7070;
+      --white: #ffffff;
+    }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: linear-gradient(160deg, #f9e8ef 0%, #fef3f7 40%, #f3e8f9 100%);
+      min-height: 100vh;
+      height: 100dvh;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    header {
+      text-align: center;
+      padding: 28px 16px 12px;
+      flex-shrink: 0;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      color: var(--text);
+    }
+    header h1 span { color: var(--rose-deep); font-style: italic; }
+
+    #counter {
+      margin-top: 6px;
+      font-size: 0.85rem;
+      color: var(--text-light);
+      font-weight: 300;
+    }
+
+    /* ---- DECK ---- */
+    #deck {
+      flex: 1;
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 16px;
+    }
+
+    .card {
+      position: absolute;
+      width: calc(100% - 32px);
+      max-width: 380px;
+      background: var(--white);
+      border-radius: 28px;
+      padding: 36px 32px 32px;
+      box-shadow: 0 16px 48px rgba(232, 118, 143, 0.2), 0 4px 12px rgba(0,0,0,0.06);
+      touch-action: none;
+      cursor: grab;
+      transition: box-shadow 0.2s;
+      will-change: transform;
+    }
+
+    .card:active { cursor: grabbing; }
+
+    /* stacked cards visual */
+    .card:nth-child(2) {
+      transform: rotate(-2deg) translateY(8px) scale(0.97);
+      z-index: 1;
+    }
+    .card:nth-child(3) {
+      transform: rotate(1.5deg) translateY(16px) scale(0.94);
+      z-index: 0;
+    }
+    .card:nth-child(1) {
+      z-index: 10;
+    }
+
+    .card-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, var(--rose), var(--rose-deep));
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+    }
+
+    .card-question {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.15rem, 3.5vw, 1.45rem);
+      line-height: 1.5;
+      color: var(--text);
+      margin-bottom: 28px;
+      min-height: 80px;
+    }
+
+    .card-author {
+      font-size: 0.8rem;
+      color: var(--text-light);
+      font-weight: 300;
+      font-style: italic;
+    }
+
+    /* drag feedback overlays */
+    .stamp {
+      position: absolute;
+      top: 28px;
+      font-size: 2.2rem;
+      font-weight: 900;
+      border: 4px solid;
+      border-radius: 8px;
+      padding: 6px 14px;
+      text-transform: uppercase;
+      font-family: 'Lato', sans-serif;
+      letter-spacing: 0.12em;
+      opacity: 0;
+      transition: opacity 0.1s;
+      pointer-events: none;
+    }
+    .stamp-done {
+      right: 24px;
+      color: #4caf7d;
+      border-color: #4caf7d;
+      transform: rotate(12deg);
+      font-size: 1.1rem;
+    }
+    .stamp-skip {
+      left: 24px;
+      color: #e8768f;
+      border-color: #e8768f;
+      transform: rotate(-12deg);
+      font-size: 1.1rem;
+    }
+
+    /* ---- ACTIONS ---- */
+    #actions {
+      flex-shrink: 0;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      padding: 16px 16px 36px;
+    }
+
+    .btn-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      background: var(--white);
+      border-radius: 20px;
+      padding: 16px 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      transition: transform 0.15s, box-shadow 0.15s;
+      font-family: 'Lato', sans-serif;
+      color: var(--text-light);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .btn-action .icon { font-size: 1.6rem; }
+    .btn-action:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+    .btn-action:active { transform: scale(0.95); }
+
+    .btn-done { color: #4caf7d; }
+    .btn-done .icon-bg {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #a8e6c3, #4caf7d);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 16px rgba(76, 175, 125, 0.35);
+    }
+    .btn-skip .icon-bg {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f9d5dd, #f4a7b9);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 12px rgba(244, 167, 185, 0.35);
+    }
+
+    /* ---- EMPTY / DONE STATE ---- */
+    #empty-state {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      text-align: center;
+      padding: 32px;
+      gap: 16px;
+    }
+    #empty-state .big-emoji { font-size: 4rem; }
+    #empty-state h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      color: var(--text);
+    }
+    #empty-state p { color: var(--text-light); font-size: 0.95rem; line-height: 1.6; }
+
+    .btn-reload {
+      margin-top: 8px;
+      border: none;
+      background: linear-gradient(135deg, var(--rose-deep), #c45c7a);
+      color: white;
+      padding: 14px 28px;
+      border-radius: 14px;
+      font-family: 'Lato', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(232, 118, 143, 0.4);
+      transition: transform 0.15s;
+    }
+    .btn-reload:hover { transform: translateY(-2px); }
+
+    /* hint */
+    .hint {
+      flex-shrink: 0;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-light);
+      padding-bottom: 4px;
+      opacity: 0.7;
+    }
+
+    /* loading */
+    #loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 16px;
+      color: var(--text-light);
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--rose);
+      border-top-color: var(--rose-deep);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .fly-out-right {
+      animation: flyRight 0.4s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+    }
+    .fly-out-left {
+      animation: flyLeft 0.4s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+    }
+    @keyframes flyRight {
+      to { transform: translateX(120%) rotate(20deg); opacity: 0; }
+    }
+    @keyframes flyLeft {
+      to { transform: translateX(-120%) rotate(-20deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>👑 Questions pour <span>la mariée</span></h1>
+    <p id="counter"></p>
+  </header>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    <span>Chargement des questions...</span>
+  </div>
+
+  <div id="deck" style="display:none;"></div>
+
+  <p class="hint" id="hint" style="display:none">← Passer &nbsp;|&nbsp; Swiper ou cliquer ✓ &nbsp;|&nbsp; Répondu →</p>
+
+  <div id="actions" style="display:none;">
+    <button class="btn-action btn-skip" id="btn-skip">
+      <div class="icon-bg">⏩</div>
+      Passer
+    </button>
+    <button class="btn-action btn-done" id="btn-done">
+      <div class="icon-bg">✅</div>
+      Répondu !
+    </button>
+  </div>
+
+  <div id="empty-state">
+    <div class="big-emoji">🎉</div>
+    <h2>Toutes les questions ont été répondues !</h2>
+    <p>Bravo ! L'EVJF est un succès.<br/>Vive la future mariée 🥂</p>
+    <button class="btn-reload" onclick="resetAll()">Rejouer depuis le début</button>
+  </div>
+
+  <script>
+    let questions = [];
+    let current = 0;
+
+    const deck = document.getElementById('deck');
+    const actions = document.getElementById('actions');
+    const counter = document.getElementById('counter');
+    const loading = document.getElementById('loading');
+    const emptyState = document.getElementById('empty-state');
+    const hint = document.getElementById('hint');
+    const btnDone = document.getElementById('btn-done');
+    const btnSkip = document.getElementById('btn-skip');
+
+    async function loadQuestions() {
+      try {
+        const res = await fetch('/api/questions');
+        const all = await res.json();
+        questions = all.filter(q => !q.done);
+        current = 0;
+        loading.style.display = 'none';
+        render();
+      } catch(e) {
+        loading.innerHTML = '<p style="color:#e8768f">Erreur de chargement, réessaie.</p>';
+      }
+    }
+
+    function render() {
+      deck.innerHTML = '';
+      const remaining = questions.slice(current);
+
+      if (remaining.length === 0) {
+        deck.style.display = 'none';
+        actions.style.display = 'none';
+        hint.style.display = 'none';
+        emptyState.style.display = 'flex';
+        counter.textContent = '';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      deck.style.display = 'flex';
+      actions.style.display = 'flex';
+      hint.style.display = 'block';
+
+      const total = remaining.length;
+      counter.textContent = `${total} question${total > 1 ? 's' : ''} restante${total > 1 ? 's' : ''}`;
+
+      // render up to 3 cards (stacked visual)
+      const visible = remaining.slice(0, 3).reverse();
+      visible.forEach((q, i) => {
+        const card = createCardEl(q, i === visible.length - 1);
+        deck.appendChild(card);
+      });
+
+      // attach drag to top card
+      const topCard = deck.querySelector('.card:last-child');
+      if (topCard) attachDrag(topCard);
+    }
+
+    function createCardEl(q, isTop) {
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.dataset.id = q.id;
+      div.innerHTML = `
+        <div class="stamp stamp-done">Répondu ✓</div>
+        <div class="stamp stamp-skip">Passer ⏩</div>
+        <div class="card-badge">✨ Question EVJF</div>
+        <div class="card-question">${escapeHtml(q.question)}</div>
+      `;
+      return div;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function markDone(id) {
+      fetch(`/api/questions/${id}/done`, { method: 'PATCH' }).catch(() => {});
+    }
+
+    function markSkipped(id) {
+      fetch(`/api/questions/${id}/skip`, { method: 'PATCH' }).catch(() => {});
+    }
+
+    function dismiss(direction) {
+      const topCard = deck.querySelector('.card:last-child');
+      if (!topCard) return;
+      const id = topCard.dataset.id;
+
+      topCard.classList.add(direction === 'right' ? 'fly-out-right' : 'fly-out-left');
+      if (direction === 'right') markDone(id);
+      else markSkipped(id);
+
+      current++;
+      setTimeout(() => render(), 380);
+    }
+
+    btnDone.addEventListener('click', () => dismiss('right'));
+    btnSkip.addEventListener('click', () => dismiss('left'));
+
+    // ---- Drag / Swipe ----
+    function attachDrag(card) {
+      let startX = 0, startY = 0, currentX = 0;
+      let isDragging = false;
+      const stampDone = card.querySelector('.stamp-done');
+      const stampSkip = card.querySelector('.stamp-skip');
+
+      function onStart(x, y) {
+        isDragging = true;
+        startX = x; startY = y;
+        card.style.transition = 'none';
+      }
+
+      function onMove(x) {
+        if (!isDragging) return;
+        currentX = x - startX;
+        const rotate = currentX * 0.08;
+        card.style.transform = `translateX(${currentX}px) rotate(${rotate}deg)`;
+
+        const ratio = Math.min(Math.abs(currentX) / 100, 1);
+        if (currentX > 20) {
+          stampDone.style.opacity = ratio;
+          stampSkip.style.opacity = 0;
+        } else if (currentX < -20) {
+          stampSkip.style.opacity = ratio;
+          stampDone.style.opacity = 0;
+        } else {
+          stampDone.style.opacity = 0;
+          stampSkip.style.opacity = 0;
+        }
+      }
+
+      function onEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        card.style.transition = '';
+        stampDone.style.opacity = 0;
+        stampSkip.style.opacity = 0;
+
+        if (currentX > 80) {
+          dismiss('right');
+        } else if (currentX < -80) {
+          dismiss('left');
+        } else {
+          card.style.transform = '';
+        }
+        currentX = 0;
+      }
+
+      // Touch
+      card.addEventListener('touchstart', e => onStart(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+      card.addEventListener('touchmove', e => onMove(e.touches[0].clientX), { passive: true });
+      card.addEventListener('touchend', onEnd);
+
+      // Mouse
+      card.addEventListener('mousedown', e => { onStart(e.clientX, e.clientY); });
+      window.addEventListener('mousemove', e => { if(isDragging) onMove(e.clientX); });
+      window.addEventListener('mouseup', onEnd);
+    }
+
+    async function resetAll() {
+      await fetch('/api/questions/reset', { method: 'POST' });
+      await loadQuestions();
+    }
+
+    loadQuestions();
+  </script>
+</body>
+</html>
